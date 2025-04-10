@@ -1,4 +1,6 @@
 #include <iostream>
+#include <vector>
+#include <memory>  // for smart pointers
 using namespace std;
 
 // Base class
@@ -9,8 +11,9 @@ protected:
 
 public:
     Vehicle(string mk, string mdl, int yr) : make(mk), model(mdl), year(yr) {}
+    virtual ~Vehicle() {}
 
-    virtual void showDetails() {
+    virtual void showDetails() const {
         cout << year << " " << make << " " << model;
     }
 };
@@ -20,9 +23,10 @@ class Car : public Vehicle {
     int num_doors;
 
 public:
-    Car(string mk, string mdl, int yr, int doors) : Vehicle(mk, mdl, yr), num_doors(doors) {}
+    Car(string mk, string mdl, int yr, int doors)
+        : Vehicle(mk, mdl, yr), num_doors(doors) {}
 
-    void showDetails() override {
+    void showDetails() const override {
         Vehicle::showDetails();
         cout << " with " << num_doors << " doors" << endl;
     }
@@ -33,9 +37,10 @@ class Truck : public Vehicle {
     int cargo_capacity;
 
 public:
-    Truck(string mk, string mdl, int yr, int capacity) : Vehicle(mk, mdl, yr), cargo_capacity(capacity) {}
+    Truck(string mk, string mdl, int yr, int capacity)
+        : Vehicle(mk, mdl, yr), cargo_capacity(capacity) {}
 
-    void showDetails() override {
+    void showDetails() const override {
         Vehicle::showDetails();
         cout << " with " << cargo_capacity << " tons capacity" << endl;
     }
@@ -44,9 +49,10 @@ public:
 // Derived class: Motorcycle
 class Motorcycle : public Vehicle {
 public:
-    Motorcycle(string mk, string mdl, int yr) : Vehicle(mk, mdl, yr) {}
+    Motorcycle(string mk, string mdl, int yr)
+        : Vehicle(mk, mdl, yr) {}
 
-    void showDetails() override {
+    void showDetails() const override {
         Vehicle::showDetails();
         cout << " (Motorcycle)" << endl;
     }
@@ -54,41 +60,84 @@ public:
 
 // Garage class to manage vehicles
 class Garage {
-    Vehicle* vehicles[10];  // Array of pointers (Max 10 vehicles)
-    int count;
+    vector<unique_ptr<Vehicle>> vehicles;
 
 public:
-    Garage() : count(0) {}  // Initialize count to 0
-
-    void addVehicle(Vehicle* v) {
-        if (count < 10) {
-            vehicles[count++] = v;
+    void addVehicle(unique_ptr<Vehicle> v) {
+        if (vehicles.size() < 10) {
+            vehicles.push_back(move(v));
+            cout << "Vehicle added successfully.\n";
         } else {
             cout << "Garage is full!\n";
         }
     }
 
-    void listVehicles() {
+    void listVehicles() const {
         cout << "\nVehicles in Garage:\n";
-        for (int i = 0; i < count; i++) {
-            vehicles[i]->showDetails();
+        if (vehicles.empty()) {
+            cout << "No vehicles yet.\n";
+        }
+        for (const auto& v : vehicles) {
+            v->showDetails();
         }
     }
 };
 
+// Function to display menu
+void showMenu() {
+    cout << "\n--- Garage Menu ---\n";
+    cout << "1. Add Car\n";
+    cout << "2. Add Truck\n";
+    cout << "3. Add Motorcycle\n";
+    cout << "4. Show All Vehicles\n";
+    cout << "5. Exit\n";
+    cout << "Enter your choice: ";
+}
+
 // Main function
 int main() {
     Garage garage;
+    int choice;
 
-    Car car("Toyota", "Fortuner", 2022, 4);
-    Truck truck("Tata", "Prima", 2023, 5);
-    Motorcycle bike("Hero", "Splendor", 2021);
+    do {
+        showMenu();
+        cin >> choice;
 
-    garage.addVehicle(&car);
-    garage.addVehicle(&truck);
-    garage.addVehicle(&bike);
+        string make, model;
+        int year, doors, capacity;
 
-    garage.listVehicles();
+        switch (choice) {
+            case 1:
+                cout << "Enter Car Make, Model, Year, Number of Doors: ";
+                cin >> make >> model >> year >> doors;
+                garage.addVehicle(make_unique<Car>(make, model, year, doors));
+                break;
+
+            case 2:
+                cout << "Enter Truck Make, Model, Year, Cargo Capacity (tons): ";
+                cin >> make >> model >> year >> capacity;
+                garage.addVehicle(make_unique<Truck>(make, model, year, capacity));
+                break;
+
+            case 3:
+                cout << "Enter Motorcycle Make, Model, Year: ";
+                cin >> make >> model >> year;
+                garage.addVehicle(make_unique<Motorcycle>(make, model, year));
+                break;
+
+            case 4:
+                garage.listVehicles();
+                break;
+
+            case 5:
+                cout << "Exiting Garage System. Goodbye!\n";
+                break;
+
+            default:
+                cout << "Invalid choice. Please try again.\n";
+        }
+
+    } while (choice != 5);
 
     return 0;
 }
