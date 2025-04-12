@@ -1,4 +1,6 @@
 #include <iostream>
+#include <vector>
+#include <memory>
 using namespace std;
 
 // Base class: Employee
@@ -6,22 +8,25 @@ class Employee {
 protected:
     string name;
     int id;
-    int salary; 
+    float salary;
 
 public:
-    Employee(string n, int i, int s) : name(n), id(i), salary(s) {}
+    Employee(string n, int i, float s) : name(n), id(i), salary(s) {}
 
     virtual void showDetails() {
         cout << "ID: " << id << ", Name: " << name << ", Salary: $" << salary;
     }
+
+    virtual ~Employee() {}
 };
 
-// Derived class: Engineering
+// Derived class: Engineer
 class Engineer : public Employee {
     string specialization;
 
 public:
-    Engineer(string n, int i, int s, string spec) : Employee(n, i, s), specialization(spec) {}
+    Engineer(string n, int i, float s, string spec)
+        : Employee(n, i, s), specialization(spec) {}
 
     void showDetails() override {
         Employee::showDetails();
@@ -29,12 +34,13 @@ public:
     }
 };
 
-// Derived class: Sales
+// Derived class: SalesPerson
 class SalesPerson : public Employee {
     float salesTarget;
 
 public:
-    SalesPerson(string n, int i, int s, float target) : Employee(n, i, s), salesTarget(target) {}
+    SalesPerson(string n, int i, float s, float target)
+        : Employee(n, i, s), salesTarget(target) {}
 
     void showDetails() override {
         Employee::showDetails();
@@ -47,7 +53,8 @@ class HR : public Employee {
     int employeesManaged;
 
 public:
-    HR(string n, int i, int s, int managed) : Employee(n, i, s), employeesManaged(managed) {}
+    HR(string n, int i, float s, int managed)
+        : Employee(n, i, s), employeesManaged(managed) {}
 
     void showDetails() override {
         Employee::showDetails();
@@ -55,43 +62,46 @@ public:
     }
 };
 
-// Company class to manage employees
+// Company class
 class Company {
-    Employee* employees[10];  // Array of pointers (Max 10 employees)
-    int count;
+    vector<Employee*> employees;
 
 public:
-    Company() : count(0) {}
-
     void addEmployee(Employee* e) {
-        if (count < 10) {
-            employees[count++] = e;
-        } else {
-            cout << "Company employee limit reached!\n";
-        }
+        employees.push_back(e);
     }
 
     void listEmployees() {
-        cout << "\nCompany Employees:\n";
-        for (int i = 0; i < count; i++) {
-            employees[i]->showDetails();
+        cout << "\n--- Company Employees ---\n";
+        for (auto e : employees) {
+            e->showDetails();
+        }
+    }
+
+    ~Company() {
+        for (auto e : employees) {
+            delete e; // Clean up dynamically allocated memory
         }
     }
 };
 
-// Main function
-int main() {
-    Company company;
+// Utility to input employee data
+void addEmployeeMenu(Company& company) {
+    int choice;
+    cout << "\nAdd New Employee:\n";
+    cout << "1. Engineer\n2. SalesPerson\n3. HR\nEnter choice: ";
+    cin >> choice;
 
-    Engineer eng("Shivam Singh", 101, 85000, "Software Development");
-    SalesPerson sales("Rajesh Kumar", 102, 60000, 500000.30f);
-    HR hr("Anjali Sharma", 103, 70000, 30);
+    string name, spec;
+    int id, managed;
+    float salary, target;
 
-    company.addEmployee(&eng);
-    company.addEmployee(&sales);
-    company.addEmployee(&hr);
+    cout << "Enter Name: ";
+    cin.ignore();
+    getline(cin, name);
+    cout << "Enter ID: ";
+    cin >> id;
+    cout << "Enter Salary: ";
+    cin >> salary;
 
-    company.listEmployees();
-
-    return 0;
-}
+    switch (choice)
