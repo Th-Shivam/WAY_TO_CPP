@@ -6,13 +6,13 @@ class Node
 public:
     int data;
     Node* next;
-    Node* prev ;
+    Node* prev;
 
     Node(int data)
     {
         this->data = data;
         this->next = NULL;
-        this->prev = NULL ;
+        this->prev = NULL;
     }
 };
 
@@ -38,7 +38,7 @@ public:
         else
         {
             newNode->next = head;
-            head->prev = newNode ;
+            head->prev = newNode;
             head = newNode;
         }
     }
@@ -54,75 +54,123 @@ public:
         else
         {
             tail->next = newNode;
-            newNode->prev = tail ;
+            newNode->prev = tail;
             tail = newNode;
         }
     }
-    
-    void PopFront(){
-        if(head == NULL){
-            return ;
+
+    void PopFront()
+    {
+        if (head == NULL)
+        {
+            return;
         }
-        
-        Node* temp = head ;
-        head = head->next ;
-        
-        if(head != NULL){
-            head->prev = NULL ;
-        }else tail=NULL ;
-        delete temp ;
+
+        Node* temp = head;
+        head = head->next;
+
+        if (head != NULL)
+        {
+            head->prev = NULL;
+        }
+        else
+        {
+            tail = NULL;
+        }
+
+        delete temp;
     }
 
-    void PopBack(){
-
-        if(head==NULL){
-            cout<<"LL is empty \n" <<endl ;
+    void PopBack()
+    {
+        if (tail == NULL)
+        {
+            return;
         }
-        Node* temp = head ;
-        while(temp->next != tail){
-            temp = temp->next ;
-        }
-        temp->next = NULL ;
-        delete tail ;
-        tail = temp ;
 
+        if (head == tail)
+        {
+            delete head;
+            head = tail = NULL;
+            return;
+        }
+
+        Node* temp = tail;
+        tail = tail->prev;
+        tail->next = NULL;
+        delete temp;
     }
-    
-    void PopAt(int pos){
-        Node* temp = head ;
-        for(int i = 0 ; i<pos-1 ; i++){
+
+    void PopAt(int pos)
+    {
+        if (head == NULL)
+        {
+            return;
+        }
+
+        if (pos == 0)
+        {
+            PopFront();
+            return;
+        }
+
+        Node* temp = head;
+        int count = 0;
+
+        while (temp != NULL && count < pos)
+        {
             temp = temp->next;
+            count++;
         }
-        
-        Node* curr = temp->next ;
-        temp->next = curr->next ;
-        delete curr ;
+
+        if (temp == NULL)
+        {
+            return;
+        }
+
+        if (temp == tail)
+        {
+            PopBack();
+            return;
+        }
+
+        temp->prev->next = temp->next;
+        temp->next->prev = temp->prev;
+
+        delete temp;
     }
-    
+
     void Display()
     {
         Node *temp = head;
         while (temp != NULL)
         {
-            cout << temp->data << "->";
+            cout << temp->data << " <-> ";
             temp = temp->next;
         }
-
         cout << "NULL" << endl;
     }
-
-    
 };
 
 int main()
-    {
-        List ll;
-        ll.PushFront(10);
-        ll.PushFront(20);
-        ll.PushFront(30);
-        ll.PushBack(40);
-        ll.PopAt(1) ;
-        ll.Display();
+{
+    List ll;
 
-        return 0;
-    }s
+    ll.PushFront(10);
+    ll.PushFront(20);
+    ll.PushFront(30);
+    ll.PushBack(40);
+
+    ll.Display();
+
+    ll.PopAt(1);
+    ll.Display();
+
+    ll.PopFront();
+    ll.Display();
+
+    ll.PopBack();
+    ll.Display();
+
+    return 0;
+}
